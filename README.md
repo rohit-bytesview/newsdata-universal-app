@@ -103,9 +103,6 @@ REACT_APP_NEWSDATA_BASE_URL=https://newsdata.io/api/1
 REACT_APP_AUTO_REFRESH_INTERVAL=60
 ```
 
-## 📱 Screenshots
-
-[Add screenshots here]
 
 ## 🤝 Contributing
 
