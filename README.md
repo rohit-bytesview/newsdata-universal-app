@@ -1,3 +1,5 @@
+<img width="1835" height="965" alt="image (3)" src="https://github.com/user-attachments/assets/2516c146-0b37-466c-99e6-aa1d16ed721c" />
+
 # 📰 NewsData Universal App
 
 A comprehensive news aggregator built with React.js and NewsData.io API. Browse **Latest**, **Crypto**, **Market**, and **Archive** news with advanced filtering by country, category, and language.
