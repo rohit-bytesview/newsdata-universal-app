@@ -1,0 +1,93 @@
+.pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+}
+
+.pagination-info {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.results-count {
+  display: block;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.load-more-btn.loading {
+  pointer-events: none;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .pagination {
+    padding: 24px 16px;
+  }
+
+  .load-more-btn {
+    width: 100%;
+  }
+}
