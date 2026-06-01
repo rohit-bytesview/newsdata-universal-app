@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import NewsPage from './pages/NewsPage';
-import { fetchNews } from './services/api';
 import { ENDPOINTS } from './constants';
 
 function App() {

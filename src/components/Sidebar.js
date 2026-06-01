@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Sidebar.css';
 import { ENDPOINTS, CATEGORIES, COUNTRIES, LANGUAGES } from '../constants';
+import useDebounce from '../hooks/useDebounce';
+
+const SEARCH_HISTORY_KEY = 'newsapp_search_history';
+const SEARCH_HISTORY_LIMIT = 8;
+
+const loadSearchHistory = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY));
+    return Array.isArray(stored) ? stored : [];
+  } catch {
+    return [];
+  }
+};
 
 const Sidebar = ({ isOpen, activeEndpoint, onEndpointChange, filters, setFilters }) => {
   const endpoints = [
@@ -10,9 +23,68 @@ const Sidebar = ({ isOpen, activeEndpoint, onEndpointChange, filters, setFilters
     { key: ENDPOINTS.ARCHIVE, label: '📚 Archive', icon: '📚' }
   ];
 
+  // Local input value drives the box instantly; the debounced copy is what
+  // actually commits to filters.q (and triggers a fetch in NewsPage).
+  const [searchInput, setSearchInput] = useState(filters.q);
+  const [history, setHistory] = useState(loadSearchHistory);
+  const [showHistory, setShowHistory] = useState(false);
+  const debouncedSearch = useDebounce(searchInput, 500);
+  const searchRef = useRef(null);
+
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
+
+  // Commit the debounced search term to global filters.
+  useEffect(() => {
+    if (debouncedSearch !== filters.q) {
+      handleFilterChange('q', debouncedSearch);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
+
+  // Keep the local box in sync when filters.q is reset elsewhere (e.g. Clear).
+  useEffect(() => {
+    setSearchInput(filters.q);
+  }, [filters.q]);
+
+  // Persist search history to localStorage whenever it changes.
+  useEffect(() => {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+  }, [history]);
+
+  // Close the history dropdown on outside click.
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const saveToHistory = (term) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setHistory(prev => [
+      trimmed,
+      ...prev.filter(t => t.toLowerCase() !== trimmed.toLowerCase())
+    ].slice(0, SEARCH_HISTORY_LIMIT));
+  };
+
+  const applyHistoryTerm = (term) => {
+    setSearchInput(term);
+    handleFilterChange('q', term);
+    saveToHistory(term);
+    setShowHistory(false);
+  };
+
+  const removeHistoryTerm = (term) => {
+    setHistory(prev => prev.filter(t => t !== term));
+  };
+
+  const clearHistory = () => setHistory([]);
 
   const clearFilters = () => {
     setFilters({
@@ -66,16 +138,64 @@ const Sidebar = ({ isOpen, activeEndpoint, onEndpointChange, filters, setFilters
             </div>
 
             {/* Search */}
-            <div className="filter-group">
+            <div className="filter-group" ref={searchRef}>
               <label htmlFor="search">Search</label>
-              <input
-                id="search"
-                type="text"
-                placeholder="Search keywords..."
-                value={filters.q}
-                onChange={(e) => handleFilterChange('q', e.target.value)}
-                className="filter-input"
-              />
+              <div className="search-wrapper">
+                <input
+                  id="search"
+                  type="text"
+                  placeholder="Search keywords..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onFocus={() => setShowHistory(true)}
+                  onBlur={() => saveToHistory(searchInput)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      saveToHistory(searchInput);
+                      setShowHistory(false);
+                    }
+                  }}
+                  className="filter-input"
+                  autoComplete="off"
+                />
+
+                {showHistory && history.length > 0 && (
+                  <div className="search-history">
+                    <div className="search-history-header">
+                      <span>Recent searches</span>
+                      <button
+                        type="button"
+                        className="history-clear"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={clearHistory}
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                    {history.map(term => (
+                      <div key={term} className="history-item">
+                        <button
+                          type="button"
+                          className="history-term"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => applyHistoryTerm(term)}
+                        >
+                          🕘 {term}
+                        </button>
+                        <button
+                          type="button"
+                          className="history-remove"
+                          aria-label={`Remove ${term}`}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => removeHistoryTerm(term)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Category */}
